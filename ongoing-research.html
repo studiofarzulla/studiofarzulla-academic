@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Ongoing research projects by Murad Farzulla" />
+    <title>Ongoing Research - Murad Farzulla</title>
+    <link rel="stylesheet" href="css/academic.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Subtle Eye Branding -->
+    <div class="brand-eye">
+      <div class="eye-outer">
+        <div class="eye-inner"></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+      <a href="index.html" class="brand-name">MURAD FARZULLA</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="ongoing-research.html" class="active">Ongoing Research</a></li>
+        <li><a href="papers.html">Papers</a></li>
+        <li><a href="articles.html">Articles</a></li>
+        <li><a href="cv.html">CV</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="container">
+        <h1 class="page-title">ONGOING RESEARCH</h1>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="page-content">
+      <div class="container">
+
+        <!-- Research Grid -->
+        <div class="research-grid">
+
+          <!-- Project 1: Semantic Supervision -->
+          <div class="research-card">
+            <div class="research-meta">
+              <span class="meta-item">
+                <span class="status-badge status-active">Active</span>
+              </span>
+              <span class="meta-item">Started: January 2025</span>
+            </div>
+            <h2 class="research-title">Semantic Supervision for Machine Learning Training</h2>
+            <p class="research-abstract">
+              Investigating methods for training neural networks through natural language explanations of intent rather than traditional statistical pattern matching. This research explores how semantic understanding can provide higher-quality training signals with fewer examples, particularly for domain-specific applications.
+            </p>
+            <p class="body-text" style="margin-top: 1rem;">
+              <strong>Mission:</strong> Democratizing LLM training for artists and creatives. This approach enables individuals to train models that match their unique philosophy, voice, and style without technical expertise. Models can be hosted locally, generate outputs based on user-specific training, and preserve creative agency—artists curate and select from AI-generated options rather than accepting outputs uncritically.
+            </p>
+            <p class="body-text">
+              <strong>Key Innovation:</strong> Conversation-based training that captures human explanations of creative or technical decisions, enabling more efficient model fine-tuning through semantic weighting of training examples.
+            </p>
+            <p class="body-text">
+              <strong>Research Questions:</strong> Can natural language explanations of intent improve training efficiency compared to traditional fine-tuning? What is the theoretical information-theoretic basis for semantic supervision?
+            </p>
+            <div class="research-tags">
+              <span class="tag">Machine Learning</span>
+              <span class="tag">Natural Language Processing</span>
+              <span class="tag">Training Methodologies</span>
+              <span class="tag">Information Theory</span>
+            </div>
+            <div class="research-links">
+              <a href="https://github.com/studiofarzulla/creative-ai-trainer" target="_blank" rel="noopener noreferrer" class="link-button">GitHub Repository</a>
+            </div>
+          </div>
+
+          <!-- Project 2: Adversarial Security AI -->
+          <div class="research-card">
+            <div class="research-meta">
+              <span class="meta-item">
+                <span class="status-badge status-published">Published</span>
+              </span>
+              <span class="meta-item">October 2025</span>
+              <span class="meta-item">v0.1.0-alpha</span>
+            </div>
+            <h2 class="research-title">Adversarial Multi-Agent Systems for Automated Security</h2>
+            <p class="research-abstract">
+              First documented Kubernetes-deployed autonomous red team agent with RAG-enhanced decision making. Built in 48 hours as proof-of-concept demonstrating the feasibility of AI-driven vulnerability discovery and exploitation at machine speed.
+            </p>
+            <p class="body-text" style="margin-top: 1rem;">
+              <strong>Motivation:</strong> With 1.3M+ npm packages and 400K+ PyPI packages published, manual security review cannot scale. This research explores whether autonomous AI agents can test software for exploits (red team) and generate verified patches (blue team) before human attackers discover vulnerabilities—enabling repositories to be automatically checked on deployment and either patched within minutes or flagged for human review.
+            </p>
+            <p class="body-text">
+              <strong>Architecture:</strong> Combines LLM-guided decision making (Qwen 2.5 Coder), RAG knowledge base (5,395 offensive security documents), BlackArch toolkit (2000+ tools), and Kubernetes NetworkPolicy for kernel-level isolation. The agent autonomously queries the knowledge base, formulates attack strategies, executes commands, and adapts based on observed results.
+            </p>
+            <p class="body-text">
+              <strong>Novel Findings:</strong> Discovered that abliterated (uncensored) models fail with structured tool calling APIs, requiring agent-orchestrated patterns. Documented Min-P sampling superiority over Top-P for tool-use tasks. Demonstrated that "boring technology" (Flask) provides better compatibility than modern frameworks (FastAPI) in restricted execution environments.
+            </p>
+            <p class="body-text">
+              <strong>End Goal:</strong> Autonomous red team vs. blue team AI competitions that can secure the entire open-source ecosystem (AUR, npm, PyPI, etc.) by discovering and patching vulnerabilities before human attackers find them. Target timeline: 90 minutes from package publication to comprehensive security analysis.
+            </p>
+            <div class="research-tags">
+              <span class="tag">Cybersecurity</span>
+              <span class="tag">Multi-Agent Systems</span>
+              <span class="tag">Kubernetes</span>
+              <span class="tag">RAG</span>
+              <span class="tag">LLM Optimization</span>
+              <span class="tag">Offensive Security</span>
+            </div>
+            <div class="research-links">
+              <a href="https://github.com/studiofarzulla/adversarial-security-agents" target="_blank" rel="noopener noreferrer" class="link-button">GitHub</a>
+              <a href="https://github.com/studiofarzulla/adversarial-security-agents/releases/tag/v0.1.0-alpha" target="_blank" rel="noopener noreferrer" class="link-button">v0.1.0-alpha</a>
+              <a href="https://github.com/studiofarzulla/adversarial-security-agents/tree/main/docs" target="_blank" rel="noopener noreferrer" class="link-button">Documentation</a>
+            </div>
+          </div>
+
+          <!-- Project 3: OSINT-Based DeFi Fraud Detection -->
+          <div class="research-card">
+            <div class="research-meta">
+              <span class="meta-item">
+                <span class="status-badge status-active">Active</span>
+              </span>
+              <span class="meta-item">Started: October 2025</span>
+            </div>
+            <h2 class="research-title">OSINT-Based Fraud Detection for Decentralized Finance</h2>
+            <p class="research-abstract">
+              A comprehensive open-source intelligence (OSINT) framework for detecting cryptocurrency scams before they execute. While on-chain analysis tools check contract code for honeypots, this system performs fundamental analysis—verifying team legitimacy, backing credibility, partnership authenticity, and utility claims—to catch sophisticated rug pulls that pass technical audits.
+            </p>
+            <p class="body-text" style="margin-top: 1rem;">
+              <strong>The Problem:</strong> Current rug pull detectors only analyze smart contracts and liquidity locks. Scammers exploit this by creating technically "safe" contracts while using fake team identities, fabricated partnerships, stolen audit credentials, and no actual product. Retail investors lose billions annually to scams that existing tools miss because they can't verify WHO is behind projects or WHY tokens exist.
+            </p>
+            <p class="body-text">
+              <strong>The Solution:</strong> Multi-factor verification analyzing: (1) Team legitimacy through reverse image search, LinkedIn validation, and GitHub activity cross-referencing, (2) Backing verification by checking VC portfolio listings and partnership confirmations, (3) Purpose analysis distinguishing genuine utility from buzzword vaporware, and (4) Historical pattern matching against known scammer wallet addresses and social manipulation tactics.
+            </p>
+            <p class="body-text">
+              <strong>Research Questions:</strong> Can OSINT methodologies from cybersecurity threat intelligence effectively identify cryptocurrency fraud? What detection accuracy can be achieved by combining social network analysis, entity resolution, and behavioral pattern recognition? How do we balance automated detection with privacy preservation?
+            </p>
+            <p class="body-text">
+              <strong>Impact:</strong> Protects retail investors from sophisticated scams that evade technical analysis. Demonstrates that DeFi's infrastructure gaps can be addressed through open-source tools rather than waiting for regulatory intervention. If widely adopted, raises the bar for scammers—making fraud economically unviable when detection is democratized.
+            </p>
+            <div class="research-tags">
+              <span class="tag">OSINT</span>
+              <span class="tag">Financial Crime Detection</span>
+              <span class="tag">DeFi Security</span>
+              <span class="tag">Social Network Analysis</span>
+              <span class="tag">Entity Resolution</span>
+            </div>
+            <div class="research-links">
+              <a href="#" class="link-button">GitHub (Coming Soon)</a>
+            </div>
+          </div>
+
+          <!-- Project 4: Sentiment-Microstructure ABM -->
+          <div class="research-card">
+            <div class="research-meta">
+              <span class="meta-item">
+                <span class="status-badge status-active">Active</span>
+              </span>
+              <span class="meta-item">Started: Planning Phase</span>
+            </div>
+            <h2 class="research-title">Sentiment-Microstructure Agent-Based Market Simulation</h2>
+            <p class="research-abstract">
+              Exploring the real-time fusion of social sentiment and order-book dynamics in cryptocurrency markets through agent-based modeling. This research investigates how collective sentiment interacts with market microstructure liquidity to produce emergent phenomena such as flash crashes and volatility clustering.
+            </p>
+            <p class="body-text" style="margin-top: 1rem;">
+              <strong>Research Questions:</strong> How does uncertainty-aware sentiment scoring impact agent decision-making in limit-order markets? Can dynamic factor models (DFMs) capture time-varying relationships between sentiment regimes and microstructure dynamics? What role does sentiment volatility play as an early warning indicator for market instability?
+            </p>
+            <p class="body-text">
+              <strong>Methodology:</strong> Integration of Polygraph uncertainty-aware NLP with limit-order book reconstruction. Multi-agent simulation featuring market makers, informed traders, noise traders, and arbitrageurs, each responding to real-time sentiment signals with epistemic uncertainty estimates. Calibration and validation against historical cryptocurrency market data.
+            </p>
+            <p class="body-text">
+              <strong>Applications:</strong> Risk regime detection, flash crash scenario testing, sentiment-driven liquidity modeling, and early warning systems for market instability in decentralized financial systems.
+            </p>
+            <div class="research-tags">
+              <span class="tag">Quantitative Finance</span>
+              <span class="tag">Market Microstructure</span>
+              <span class="tag">Agent-Based Modeling</span>
+              <span class="tag">Sentiment Analysis</span>
+              <span class="tag">Cryptocurrency Markets</span>
+              <span class="tag">Risk Management</span>
+            </div>
+            <div class="research-links">
+              <a href="#" class="link-button">GitHub (Coming Soon)</a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <div class="footer-content">
+        <p class="footer-text">© 2025 Murad Farzulla</p>
+        <p class="footer-link">
+          <a href="https://farzulla.com" target="_blank" rel="noopener noreferrer">~ Personal Site</a>
+        </p>
+      </div>
+    </footer>
+
+    <script src="js/academic.js"></script>
+  </body>
+</html>
