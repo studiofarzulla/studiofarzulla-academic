@@ -2,6 +2,48 @@
 // Smooth scrolling and basic interactions
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Mobile menu toggle
+    const nav = document.querySelector('.main-nav');
+    const navLinks = document.querySelector('.nav-links');
+
+    // Create hamburger button
+    const hamburger = document.createElement('button');
+    hamburger.className = 'mobile-menu-toggle';
+    hamburger.setAttribute('aria-label', 'Toggle menu');
+    hamburger.innerHTML = `
+        <span></span>
+        <span></span>
+        <span></span>
+    `;
+
+    // Insert hamburger before nav-links
+    nav.insertBefore(hamburger, navLinks);
+
+    // Toggle menu on hamburger click
+    hamburger.addEventListener('click', function() {
+        navLinks.classList.toggle('active');
+        hamburger.classList.toggle('active');
+        document.body.classList.toggle('menu-open');
+    });
+
+    // Close menu when clicking a link
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('active');
+            hamburger.classList.remove('active');
+            document.body.classList.remove('menu-open');
+        });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!nav.contains(e.target) && navLinks.classList.contains('active')) {
+            navLinks.classList.remove('active');
+            hamburger.classList.remove('active');
+            document.body.classList.remove('menu-open');
+        }
+    });
+
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
