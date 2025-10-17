@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Kubernetes-Native Model Context Protocol RAG Server for Adversarial AI Research - Farzulla Research" />
+    <title>Kubernetes-Native MCP RAG Server - Farzulla Research</title>
+    <link rel="stylesheet" href="../css/academic.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Subtle Eye Branding -->
+    <div class="brand-eye">
+      <div class="eye-outer">
+        <div class="eye-inner"></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+      <a href="../index.html" class="brand-name">FARZULLA RESEARCH</a>
+      <ul class="nav-links">
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../ongoing-research.html">Ongoing Research</a></li>
+        <li><a href="../papers.html">Papers</a></li>
+        <li><a href="../articles.html" class="active">Articles</a></li>
+        <li><a href="../cv.html">CV</a></li>
+        <li><a href="../contact.html">Contact</a></li>
+      </ul>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="container">
+        <h1 class="page-title">Kubernetes-Native Model Context Protocol RAG Server for Adversarial AI Research</h1>
+        <div class="paper-meta" style="margin-top: 1.5rem; justify-content: center;">
+          <span class="meta-item">Published: October 8, 2025</span>
+          <span class="meta-item">Technical Writeup</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="page-content">
+      <div class="container">
+        <div class="paper-content">
+
+          <!-- Abstract -->
+          <section class="paper-section">
+            <h2 class="section-title">Abstract</h2>
+            <p class="body-text">
+              This article documents the design, implementation, and deployment of a Kubernetes-native Retrieval-Augmented Generation (RAG) server implementing the Model Context Protocol (MCP) for adversarial artificial intelligence research. The system indexes 5,395 offensive security documents (GTFOBins, Atomic Red Team, HackTricks) with MITRE ATT&CK technique mappings, providing semantic search via sentence transformers and FAISS vector indexing. Technical challenges addressed include Linux container security restrictions blocking asyncio syscalls, requiring migration from FastAPI to Flask/Gunicorn architecture, and incomplete MCP protocol compliance resolved through addition of notification handlers. The resulting infrastructure achieves sub-second semantic search (200 to 500ms), operates with minimal security privileges (non-root execution, dropped capabilities, RuntimeDefault seccomp profile), and provides foundation for autonomous red team versus blue team agent competitions. This represents the first documented production deployment of an MCP-compliant RAG server on Kubernetes, deployed concurrently with LM Studio's initial MCP support release.
+            </p>
+            <p class="body-text"><strong>Keywords:</strong> Model Context Protocol, Retrieval-Augmented Generation, Kubernetes, container security, offensive security, MITRE ATT&CK, semantic search, adversarial AI</p>
+          </section>
+
+          <!-- Introduction -->
+          <section class="paper-section">
+            <h2 class="section-title">1. Introduction</h2>
+            <p class="body-text">
+              Autonomous adversarial AI systems require access to domain-specific knowledge bases to generate contextually appropriate attack and defense strategies. Traditional approaches either embed knowledge in model weights (requiring expensive fine-tuning) or rely on generic retrieval systems lacking domain structure. We propose infrastructure enabling real-time knowledge retrieval augmentation for competing AI agents: red team agents accessing offensive security documentation, blue team agents querying defensive playbooks.
+            </p>
+            <p class="body-text">
+              This work addresses three primary technical challenges: (1) semantic indexing of adversarial knowledge bases with taxonomic structure preservation (MITRE ATT&CK mappings), (2) protocol-compliant integration with language model inference engines via Model Context Protocol, and (3) secure container deployment satisfying Kubernetes security policies without privileged mode escalation.
+            </p>
+            <p class="body-text">
+              The resulting system provides foundation for research questions including: Can autonomous agents iteratively improve offensive or defensive capability through knowledge base access? Do agents develop emergent strategies beyond training data patterns? How do abliterated (uncensored) language models perform on adversarial tasks with domain-specific context augmentation?
+            </p>
+          </section>
+
+          <!-- Background -->
+          <section class="paper-section">
+            <h2 class="section-title">2. Background</h2>
+
+            <h3 class="subsection-title">2.1 Model Context Protocol</h3>
+            <p class="body-text">
+              Model Context Protocol (MCP), developed by Anthropic, standardizes communication between language models and external data sources. The protocol implements JSON-RPC 2.0 over HTTP, defining four core interaction phases: initialization with capability negotiation, client notification acknowledgment, tool discovery via schema introspection, and tool execution with parameter validation.
+            </p>
+            <p class="body-text">
+              MCP addresses proliferation of proprietary function-calling APIs by providing language-agnostic, implementation-independent specification. Servers expose "tools" with JSON Schema definitions; clients (LLM inference engines) discover available tools and invoke them with structured parameters. This abstraction enables multiple LLM providers to integrate with identical backend infrastructure without custom implementation per provider.
+            </p>
+
+            <h3 class="subsection-title">2.2 Retrieval-Augmented Generation</h3>
+            <p class="body-text">
+              Retrieval-Augmented Generation extends language model capabilities by injecting retrieved context into prompts, addressing knowledge cutoff limitations and hallucination reduction. Standard RAG architectures consist of: (1) offline indexing phase generating document embeddings and vector store construction, (2) online retrieval phase encoding queries and performing similarity search, and (3) generation phase where retrieved context augments model input.
+            </p>
+            <p class="body-text">
+              For adversarial domains, RAG provides additional benefits: models need not internalize exploits during training (avoiding potential misuse concerns), knowledge bases update independently of model parameters, and technique-specific retrieval enables targeted responses rather than generic security advice.
+            </p>
+
+            <h3 class="subsection-title">2.3 Container Security Constraints</h3>
+            <p class="body-text">
+              Kubernetes enforces security policies via seccomp (secure computing mode) and AppArmor profiles, restricting available syscalls to prevent container breakout and privilege escalation. Standard RuntimeDefault seccomp profiles block potentially dangerous syscalls including `socketpair()`, `clone()` with specific flags, and various filesystem operations. Applications relying on blocked syscalls fail with permission errors even when executed as privileged users, requiring either privileged mode escalation (security risk) or architectural modification to avoid restricted operations.
+            </p>
+          </section>
+
+          <!-- Architecture -->
+          <section class="paper-section">
+            <h2 class="section-title">3. System Architecture</h2>
+
+            <h3 class="subsection-title">3.1 Knowledge Base Indexing</h3>
+            <p class="body-text">
+              The offensive security knowledge base comprises three publicly available repositories:
+            </p>
+            <ul class="body-text" style="margin-left: 2rem; margin-top: 1rem; margin-bottom: 1rem;">
+              <li style="margin-bottom: 0.5rem;"><strong>GTFOBins:</strong> 390 Unix binaries with documented privilege escalation, file read/write, and command execution capabilities</li>
+              <li style="margin-bottom: 0.5rem;"><strong>Atomic Red Team:</strong> 355 MITRE ATT&CK technique implementations with executable test cases in YAML format</li>
+              <li style="margin-bottom: 0.5rem;"><strong>HackTricks:</strong> 903 penetration testing methodology guides covering web applications, network services, privilege escalation, and post-exploitation</li>
+            </ul>
+            <p class="body-text">
+              The indexing pipeline processes 1,648 source files through five stages: (1) recursive directory traversal with filetype detection (Markdown, YAML), (2) document chunking with overlap to preserve context across boundaries (512 characters with 128 character overlap for large documents, 400 characters with 100 character overlap for compact entries), (3) MITRE ATT&CK technique ID extraction via regex pattern matching (`T\d{4}(?:\.\d{3})?`), (4) embedding generation using sentence-transformers all-MiniLM-L6-v2 model (384-dimensional dense vectors), and (5) FAISS index construction with L2 distance metric optimized for CPU execution.
+            </p>
+            <p class="body-text">
+              Final index statistics: 5,395 total chunks (GTFOBins 406, Atomic Red Team 1,761, HackTricks 3,228), 327 unique MITRE ATT&CK technique IDs catalogued, 22MB total storage (14MB document JSON, 8MB FAISS index), 4 minute indexing duration on AMD Ryzen 2700X with 16GB RAM.
+            </p>
+
+            <h3 class="subsection-title">3.2 Initial Server Implementation: FastAPI</h3>
+            <p class="body-text">
+              Initial implementation selected FastAPI for modern asynchronous architecture, automatic OpenAPI documentation generation, and native Pydantic validation. The RAG engine class loads the FAISS index and sentence transformer model on initialization, exposing four HTTP endpoints: health checks (K8s readiness probes), simple search (testing), MCP tool discovery (`GET /tools/list`), and MCP tool execution (`POST /tools/call`).
+            </p>
+            <p class="body-text">
+              Container deployment utilized Python 3.11-slim base image with uvicorn ASGI server. Security context configured non-root execution (UID 1000), all capabilities dropped, and RuntimeDefault seccomp profile. Deployment to Kubernetes resulted in immediate CrashLoopBackOff status with permission error: `PermissionError: [Errno 13] Permission denied` originating from `asyncio/selector_events.py` during `socket.socketpair()` invocation.
+            </p>
+
+            <h3 class="subsection-title">3.3 The socketpair() Syscall Problem</h3>
+            <p class="body-text">
+              Python's asyncio event loop requires `socketpair()` syscall for inter-thread signaling: creating paired Unix sockets enabling one thread to wake the event loop when events arrive. This mechanism is fundamental to asyncio's selector-based implementation on Unix systems. Kubernetes seccomp policies block `socketpair()` to prevent potential container escape vectors via socket manipulation.
+            </p>
+            <p class="body-text">
+              Six remediation approaches were attempted and failed: (1) direct uvicorn execution without additional ASGI server layers, (2) explicit standard library asyncio specification (`--loop asyncio`) avoiding accelerated implementations, (3) seccomp profile escalation to Unconfined mode, (4) hostNetwork mode enabling host namespace access, (5) selective capability grants (NET_BIND_SERVICE retention), (6) root user execution. All attempts produced identical permission errors, indicating policy enforcement occurred at container runtime level independent of process permissions.
+            </p>
+
+            <h3 class="subsection-title">3.4 Solution: Flask with Synchronous Workers</h3>
+            <p class="body-text">
+              Analysis revealed asyncio unnecessary for workload characteristics: RAG search operations are primarily I/O-bound (disk reads for embeddings, numpy operations for similarity computation) and CPU-bound during embedding generation (sentence-transformers releases Python GIL during tensor operations). Concurrency requirements are modest (8 simultaneous requests sufficient for research infrastructure). Threading with synchronous I/O satisfies these constraints without requiring event loop syscalls.
+            </p>
+            <p class="body-text">
+              Complete server rewrite in Flask eliminated asyncio dependency. Gunicorn WSGI server configuration: 2 worker processes, 4 threads per worker, 120 second timeout, synchronous worker class. This architecture provides 8 concurrent request capacity (2 workers × 4 threads) with zero asyncio syscall requirements. Each thread handles one request synchronously; no event loop, no socketpair().
+            </p>
+            <p class="body-text">
+              The RAG engine implements lazy loading pattern: initialization deferred until first request rather than container startup. This design maintains rapid pod startup (~2 seconds) satisfying Kubernetes readiness probes, with model loading occurring during initial request (~10 to 15 seconds). Subsequent requests achieve 200 to 500ms latency for semantic search operations.
+            </p>
+          </section>
+
+          <!-- MCP Implementation -->
+          <section class="paper-section">
+            <h2 class="section-title">4. Model Context Protocol Implementation</h2>
+
+            <h3 class="subsection-title">4.1 Protocol Handshake Sequence</h3>
+            <p class="body-text">
+              MCP defines four-phase handshake between client (LLM inference engine) and server (data source). Phase 1: Client sends `initialize` request containing protocol version, supported capabilities, and client identification. Server responds with protocol version confirmation, server capabilities, and server identification. Phase 2: Client sends `notifications/initialized` notification (no response ID field) confirming successful initialization. Server acknowledges with HTTP 200 status. Phase 3: Client requests `tools/list` to discover available operations. Server returns array of tool definitions with JSON Schema specifications. Phase 4: Client invokes `tools/call` with tool name and arguments. Server executes operation and returns structured results.
+            </p>
+
+            <h3 class="subsection-title">4.2 The Missing Notification Handler</h3>
+            <p class="body-text">
+              Initial MCP implementation omitted `notifications/initialized` handler, implementing only initialize, tools/list, and tools/call methods. Testing with LM Studio MCP bridge produced consistent failure pattern: initialize request succeeded (200 OK), subsequent request returned 404 Not Found, connection timeout after 90+ seconds, zero tools discovered, integration marked failed.
+            </p>
+            <p class="body-text">
+              Comprehensive logging deployment (v9-debug) captured the protocol violation: `WARNING - Unknown MCP method called: notifications/initialized` followed by `"POST / HTTP/1.1" 404`. MCP specification consultation confirmed `notifications/initialized` as required handshake component. Clients interpret missing notification handlers as non-compliant servers, aborting integration for safety.
+            </p>
+            <p class="body-text">
+              The fix required three lines of code:
+            </p>
+            <p class="body-text" style="font-family: 'Courier Prime', monospace; background: var(--smoke); padding: 1rem; margin: 1rem 0;">
+              elif method == "notifications/initialized":<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;logger.info("Received notifications/initialized from client")<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;return '', 200
+            </p>
+            <p class="body-text">
+              Post-fix handshake sequence: initialize 200 OK, notifications/initialized 200 OK, tools/list 200 OK, tools discovered: ["search", "list_techniques"], status: Connected, completion time: ~1 second.
+            </p>
+
+            <h3 class="subsection-title">4.3 Tool Definitions</h3>
+            <p class="body-text">
+              The server exposes two MCP tools with complete JSON Schema specifications:
+            </p>
+            <p class="body-text">
+              <strong>search:</strong> Performs semantic search over knowledge base. Required parameters: query (string, natural language search expression). Optional parameters: top_k (integer, default 5, number of results returned), technique_id (string, MITRE ATT&CK ID filter). Returns array of result objects containing rank, similarity score, content excerpt, and metadata (source repository, technique ID, document category).
+            </p>
+            <p class="body-text">
+              <strong>list_techniques:</strong> Enumerates all indexed MITRE ATT&CK technique IDs. No required parameters. Returns array of technique ID strings with associated counts of indexed documents per technique.
+            </p>
+          </section>
+
+          <!-- Results -->
+          <section class="paper-section">
+            <h2 class="section-title">5. Performance Evaluation</h2>
+
+            <h3 class="subsection-title">5.1 Semantic Search Quality</h3>
+            <p class="body-text">
+              Test query: "Linux privilege escalation SUID binaries"
+            </p>
+            <p class="body-text">
+              Results returned (ranked by L2 distance converted to similarity score via `1 / (1 + distance)`):
+            </p>
+            <ol class="body-text" style="margin-left: 2rem; margin-top: 1rem;">
+              <li style="margin-bottom: 0.5rem;"><strong>Rank 1, Score 0.562:</strong> Atomic Red Team T1059.004 (Command and Scripting Interpreter: Bash) - "Harvest SUID executable files with AutoSUID application..."</li>
+              <li style="margin-bottom: 0.5rem;"><strong>Rank 2, Score 0.560:</strong> Atomic Red Team T1548.001 (Abuse Elevation Control Mechanism: Setuid and Setgid) - "Make and modify capabilities of a binary with cap_setuid=ep..."</li>
+              <li style="margin-bottom: 0.5rem;"><strong>Rank 3, Score 0.547:</strong> HackTricks linux-hardening category - "SUID binary exploitation techniques including find, python, bash escapes..."</li>
+            </ol>
+            <p class="body-text">
+              Semantic search demonstrates high relevance: top three results directly address query intent with technique-specific implementation details. The all-MiniLM-L6-v2 embedding model successfully captures semantic similarity between natural language queries and technical documentation despite vocabulary differences.
+            </p>
+
+            <h3 class="subsection-title">5.2 Latency Characteristics</h3>
+            <p class="body-text">
+              End-to-end RAG pipeline latency breakdown:
+            </p>
+            <ul class="body-text" style="margin-left: 2rem; margin-top: 1rem;">
+              <li style="margin-bottom: 0.5rem;">MCP handshake: ~1 second (one-time per session)</li>
+              <li style="margin-bottom: 0.5rem;">Semantic search: 200 to 500ms (query encoding + FAISS lookup)</li>
+              <li style="margin-bottom: 0.5rem;">Context retrieval: <50ms (reading document JSON)</li>
+              <li style="margin-bottom: 0.5rem;">LLM generation: 5 to 10 seconds (14B parameter model, ~100 tokens/second)</li>
+              <li style="margin-bottom: 0.5rem;"><strong>Total end-to-end:</strong> 6 to 12 seconds from query to complete generated response</li>
+            </ul>
+
+            <h3 class="subsection-title">5.3 Resource Utilization</h3>
+            <p class="body-text">
+              Production deployment resource consumption: Memory 2 to 3GB (sentence transformer model and FAISS index resident in RAM), CPU minimal at idle with spikes to ~1 core during embedding generation, disk 22MB index data (mounted read-only from PersistentVolume), container image 8.1GB (Python 3.11, PyTorch, sentence-transformers, FAISS dependencies).
+            </p>
+            <p class="body-text">
+              Security context: non-root user execution (UID 1000), all capabilities dropped, RuntimeDefault seccomp profile (no special permissions required), standard Kubernetes networking (NodePort service), read-only mount for index data.
+            </p>
+          </section>
+
+          <!-- Discussion -->
+          <section class="paper-section">
+            <h2 class="section-title">6. Discussion</h2>
+
+            <h3 class="subsection-title">6.1 Flask versus FastAPI for Container Security</h3>
+            <p class="body-text">
+              Framework selection for containerized applications must account for security policy compatibility. FastAPI with uvicorn provides superior theoretical performance via asyncio event loop, but requires `socketpair()` syscall blocked by standard Kubernetes seccomp profiles. Flask with Gunicorn uses synchronous workers and threading, avoiding restricted syscalls at cost of reduced throughput capacity.
+            </p>
+            <p class="body-text">
+              For RAG workloads, synchronous architecture proves sufficient: embedding generation releases Python GIL during tensor operations (enabling true parallelism), FAISS search is CPU-bound (benefits from multi-core worker processes), and modest concurrency requirements (8 simultaneous requests) satisfied by Gunicorn threading model. Flask wins on container compatibility without performance degradation for this use case.
+            </p>
+
+            <h3 class="subsection-title">6.2 Protocol Compliance Criticality</h3>
+            <p class="body-text">
+              Incomplete protocol implementations produce integration failures disproportionate to code complexity. The missing `notifications/initialized` handler—three lines of acknowledgment code—blocked all MCP functionality despite correct implementation of primary operations (tool discovery and execution). This occurred because MCP clients implement safety mechanisms: non-compliant servers are rejected to prevent undefined behavior during tool invocation.
+            </p>
+            <p class="body-text">
+              Lesson: Protocol specifications must be implemented completely, including acknowledgment notifications that appear optional. Comprehensive logging enabling identification of unknown method calls proved essential for debugging, requiring only minutes to identify the missing handler once logging infrastructure existed.
+            </p>
+
+            <h3 class="subsection-title">6.3 Day Zero Integration Challenges</h3>
+            <p class="body-text">
+              This work deployed MCP infrastructure concurrent with LM Studio's initial MCP support release (October 8, 2025). Testing identified bug in LM Studio's `/v1/responses` API endpoint: successful MCP handshake and tool discovery, but 500 Internal Server Error during actual tool invocation. Direct MCP protocol calls function correctly, indicating bug resides in LM Studio's integration layer rather than protocol implementation.
+            </p>
+            <p class="body-text">
+              Workaround: Custom Python RAG client implementing complete MCP handshake (initialize → notifications/initialized → tools/list) followed by direct tool invocation and manual context injection into LM Studio's standard chat API (`/v1/chat/completions`). This approach bypasses buggy MCP response endpoint while maintaining full RAG functionality.
+            </p>
+
+            <h3 class="subsection-title">6.4 FAISS Index Design Decisions</h3>
+            <p class="body-text">
+              L2 (Euclidean) distance metric selected over cosine similarity despite common practice favoring cosine for text embeddings. Justification: sentence-transformers models produce normalized embeddings (unit vectors), for which L2 distance and cosine distance are mathematically equivalent: `d_cosine = 2 - 2 * cos(θ)` and `d_L2^2 = 2 - 2 * cos(θ)` for unit vectors. FAISS L2 index construction and query operations execute faster than inner product index, providing performance benefit without accuracy degradation.
+            </p>
+            <p class="body-text">
+              Chunking strategy balances context preservation and retrieval granularity: 512 character chunks with 128 character overlap for large HackTricks guides maintain coherent explanations across chunk boundaries, while 400 character chunks with 100 character overlap for compact GTFOBins and Atomic Red Team entries provide technique-specific retrieval without excessive redundancy.
+            </p>
+          </section>
+
+          <!-- Future Work -->
+          <section class="paper-section">
+            <h2 class="section-title">7. Future Work: Autonomous Adversarial Agents</h2>
+
+            <h3 class="subsection-title">7.1 Research Vision</h3>
+            <p class="body-text">
+              The infrastructure deployed enables investigation of autonomous adversarial AI systems: red team agents querying offensive MCP server, blue team agents accessing defensive knowledge base, competing in isolated network environments with vulnerable target systems.
+            </p>
+            <p class="body-text">
+              Research questions include: (1) Can agents iteratively improve performance through repeated attempts with knowledge base feedback? (2) Do agents develop emergent attack or defense strategies not present in indexed documentation? (3) How do abliterated (uncensored) language models perform on adversarial tasks compared to safety-tuned alternatives? (4) Does red team agent capability trained on web applications generalize to IoT devices, APIs, or other domains?
+            </p>
+
+            <h3 class="subsection-title">7.2 Proposed Agent Architecture</h3>
+            <p class="body-text">
+              Autonomous red team agent consists of six-stage decision loop: (1) Query MCP RAG for relevant techniques based on current objective and observed target state, (2) Generate exploitation plan via language model augmented with retrieved context, (3) Execute commands via subprocess with comprehensive safety checks (whitelist allowed commands, blacklist destructive patterns, timeout enforcement), (4) Parse command output and extract intelligence about target system, (5) Adjust strategy based on success or failure signals, (6) Iterate until objective achieved or maximum attempts exceeded.
+            </p>
+            <p class="body-text">
+              Safety requirements: Network isolation via dedicated bridge network or VLAN preventing internet and LAN access, firewall rules permitting only agent-to-target communication, physical kill switch for immediate network disablement, command sandboxing with whitelist (`ssh`, `nmap`, `curl`, `python3`) and blacklist (
+
+`rm -rf`, `dd`, fork bombs), comprehensive logging of all operations, resource limits on CPU/memory/network bandwidth, VM snapshot and auto-restore to clean state after each test run.
+            </p>
+
+            <h3 class="subsection-title">7.3 Blue Team Counterpart</h3>
+            <p class="body-text">
+              Parallel deployment of defensive MCP server indexing MITRE D3FEND framework, system hardening guides, detection rule databases, and incident response playbooks. Blue team agent monitors target system logs, queries defensive knowledge base for detection signatures and mitigation procedures, generates patches or configuration changes, and applies defensive measures in real time. Competition scoring based on time to compromise (red team), detection accuracy (blue team), false positive rates, and adaptation speed.
+            </p>
+          </section>
+
+          <!-- Conclusion -->
+          <section class="paper-section">
+            <h2 class="section-title">8. Conclusion</h2>
+            <p class="body-text">
+              This work demonstrates production deployment of Kubernetes-native MCP RAG infrastructure for adversarial AI research. The system successfully addresses container security constraints through architectural modification (Flask/Gunicorn replacing FastAPI/uvicorn), implements complete MCP protocol compliance including critical notification handlers, and provides sub-second semantic search over 5,395 offensive security documents with MITRE ATT&CK taxonomic structure.
+            </p>
+            <p class="body-text">
+              Key contributions include: (1) First documented MCP server deployment on Kubernetes with security best practices, (2) Solution to asyncio syscall restrictions in containerized Python applications, (3) Demonstration of semantic search effectiveness for adversarial knowledge bases, (4) Infrastructure foundation enabling autonomous red team versus blue team agent research.
+            </p>
+            <p class="body-text">
+              The deployed system operates stably in production, serving as testbed for investigating whether AI agents can improve adversarial capabilities through iterative learning, whether emergent strategies develop beyond training data patterns, and how abliterated language models with domain-specific knowledge augmentation perform on security tasks. This infrastructure provides technical foundation for advancing understanding of AI capability in adversarial domains.
+            </p>
+          </section>
+
+          <!-- References -->
+          <section class="paper-section">
+            <h2 class="section-title">9. Technical Specifications</h2>
+            <p class="body-text"><strong>Knowledge Base:</strong></p>
+            <ul class="body-text" style="margin-left: 2rem;">
+              <li>Total documents: 5,395 chunks</li>
+              <li>Sources: GTFOBins (406 chunks), Atomic Red Team (1,761 chunks), HackTricks (3,228 chunks)</li>
+              <li>MITRE ATT&CK techniques: 327 unique IDs</li>
+              <li>Embedding model: sentence-transformers all-MiniLM-L6-v2 (384 dimensions)</li>
+              <li>Vector store: FAISS with L2 distance metric</li>
+              <li>Index size: 22MB (14MB documents JSON + 8MB FAISS index)</li>
+            </ul>
+
+            <p class="body-text" style="margin-top: 1.5rem;"><strong>Server Implementation:</strong></p>
+            <ul class="body-text" style="margin-left: 2rem;">
+              <li>Framework: Flask 3.0.0 with Gunicorn 21.2.0</li>
+              <li>Concurrency: 2 worker processes × 4 threads = 8 simultaneous requests</li>
+              <li>Container base: Python 3.11-slim</li>
+              <li>Security context: Non-root execution (UID 1000), all capabilities dropped, RuntimeDefault seccomp profile</li>
+              <li>Query latency: 200 to 500ms (embedding generation + FAISS search)</li>
+            </ul>
+
+            <p class="body-text" style="margin-top: 1.5rem;"><strong>Infrastructure:</strong></p>
+            <ul class="body-text" style="margin-left: 2rem;">
+              <li>Orchestration: K3s (lightweight Kubernetes distribution)</li>
+              <li>Storage: PersistentVolume with ReadOnlyMany access mode</li>
+              <li>Networking: NodePort service (port 30800)</li>
+              <li>Deployment: Single replica with node affinity to control plane</li>
+            </ul>
+
+            <p class="body-text" style="margin-top: 1.5rem;"><strong>MCP Protocol Compliance:</strong></p>
+            <ul class="body-text" style="margin-left: 2rem;">
+              <li>Protocol version: JSON-RPC 2.0 over HTTP</li>
+              <li>Implemented methods: initialize, notifications/initialized, tools/list, tools/call</li>
+              <li>Tools exposed: search (semantic search with optional MITRE filter), list_techniques (enumerate indexed IDs)</li>
+              <li>Handshake duration: ~1 second</li>
+            </ul>
+          </section>
+
+          <!-- Tags -->
+          <div class="paper-tags" style="margin-top: 3rem;">
+            <span class="tag">Model Context Protocol</span>
+            <span class="tag">Kubernetes</span>
+            <span class="tag">RAG Systems</span>
+            <span class="tag">Container Security</span>
+            <span class="tag">Offensive Security</span>
+            <span class="tag">MITRE ATT&CK</span>
+            <span class="tag">Semantic Search</span>
+            <span class="tag">Adversarial AI</span>
+          </div>
+
+          <!-- Back Link -->
+          <div style="margin-top: 3rem; text-align: center;">
+            <a href="../articles.html" class="link-button">← Back to Articles</a>
+            <a href="https://github.com/studiofarzulla/mcp-rag-server" target="_blank" rel="noopener noreferrer" class="link-button" style="margin-left: 1rem;">GitHub Repository</a>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <div class="footer-content">
+        <p class="footer-text">© 2025 Farzulla Research | <a href="../charter.html">Charter</a></p>
+        <p class="footer-link">
+          <a href="https://farzulla.com" target="_blank" rel="noopener noreferrer">~ Personal Site</a>
+        </p>
+      </div>
+    </footer>
+
+    <script src="../js/academic.js"></script>
+  </body>
+</html>
