@@ -115,13 +115,14 @@ body {
 }
 
 .nav-logo {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    border: 2px solid var(--accent-red);
-    padding: 4px;
-    background: #8B2F2F;
+    width: 120px;
+    height: 120px;
     transition: all 0.3s ease;
+    pointer-events: none;
+    margin: -2rem -2rem -2rem -2rem;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.5);
 }
 
 .brand-name:hover .nav-logo {
@@ -186,16 +187,15 @@ body {
 }
 
 .hero-logo {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 2rem;
+    width: 600px;
+    height: 600px;
+    margin: -10rem auto -12rem;
     display: block;
-    border-radius: 50%;
-    border: 3px solid var(--accent-red);
-    padding: 8px;
-    background: #8B2F2F;
     animation: float 3s ease-in-out infinite;
-    box-shadow: 0 0 30px rgba(220, 20, 60, 0.4);
+    pointer-events: none;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.5);
 }
 
 @keyframes float {
